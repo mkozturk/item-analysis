@@ -66,7 +66,7 @@ with st.sidebar:
     
     st.divider()
     "Created and maintained by [Kaan Öztürk](https://mkozturk.com)"
-    "Project site: https://github.com/mkozturk"
+    "Project site: https://github.com/mkozturk/item-analysis"
 
 report, help = st.tabs(["Report","Help"])
 
