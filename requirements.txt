@@ -2,5 +2,4 @@ numpy
 openpyxl
 pandas
 streamlit
-ipykernel
 tabulate

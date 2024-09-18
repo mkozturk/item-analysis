@@ -18,7 +18,8 @@ def initial_state():
 
 initial_state()
 
-st.image("pencil_and_test.png", use_column_width=True)
+st.image("img/pencil_and_test.png", use_column_width=True)
+
 "# Test Item Analysis Reporting Tool"
 
 with st.sidebar:
