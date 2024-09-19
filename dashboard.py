@@ -11,7 +11,7 @@ def get_responses(df):
 
 st.set_page_config(
     page_title="Item Analysis App",
-    page_icon="img/icon.png",
+    page_icon="img/icon.svg",
     layout="centered",
     initial_sidebar_state="expanded",
 )
