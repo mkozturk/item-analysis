@@ -9,6 +9,12 @@ def get_key(df):
 def get_responses(df):
     return df.iloc[1:,:]
 
+st.set_page_config(
+    page_title="Item Analysis App",
+    page_icon="img/icon.png",
+    layout="centered",
+    initial_sidebar_state="expanded",
+)
 # Initial State
 def initial_state():
     if 'df' not in st.session_state:
@@ -135,7 +141,7 @@ with report:
     st.write("## Data Preview 📄")
     st.write("*Check the correctness of your data. Edit and reupload if necessary.*")
 
-    labels_in_first_row = st.checkbox("Use first row for column labels", value=True)
+    labels_in_first_row = st.checkbox("Use first row as column labels", value=True)
     idx_first_col = st.checkbox("Use first column as index", value=True)
     if labels_in_first_row:
         df = df.rename(columns=df.iloc[0]).drop(df.index[0])
@@ -147,12 +153,21 @@ with report:
     else:
         df = df.set_axis([f"S{i+1:d}" for i in df.index])
 
-    try:
-        st.dataframe(df) # preview the data sheet
-    except ValueError as e:
-        if "Duplicate column names found" in e.__str__():
-            st.error("Error reading column names. Try unchecking 'Use first row for column labels'")
-            st.stop()
+    if not df.index.is_unique:
+        st.error("Duplicate index values found. Try unchecking 'Use first column as index' or review your input.")
+        st.stop()
+    if not df.columns.is_unique:
+        st.error("Duplicate column names found. Try unchecking 'Use first row as column labels'")
+        st.stop()
+    
+    st.dataframe(df) # preview the data sheet
+
+    # try:
+    #     st.dataframe(df) # preview the data sheet
+    # except ValueError as e:
+    #     if "Duplicate column names found" in e.__str__():
+    #         st.error("Error reading column names. Try unchecking 'Use first row as column labels'")
+    #         st.stop()
 
 
     key = get_key(df)
