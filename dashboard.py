@@ -139,11 +139,16 @@ with report:
     idx_first_col = st.checkbox("Use first column as index", value=True)
     if labels_in_first_row:
         df = df.rename(columns=df.iloc[0]).drop(df.index[0])
+    else:
+        df = df.set_axis([f"Q{i+1:d}" for i in df.columns],axis=1)
+    
     if idx_first_col:
         df = df.set_index(df.columns[0])
+    else:
+        df = df.set_axis([f"S{i+1:d}" for i in df.index])
 
     try:
-        st.data_editor(df) # preview the data sheet
+        st.dataframe(df) # preview the data sheet
     except ValueError as e:
         if "Duplicate column names found" in e.__str__():
             st.error("Error reading column names. Try unchecking 'Use first row for column labels'")
@@ -193,11 +198,6 @@ with report:
     st.write("## Item Analysis 🔬")
     difficulty = grading.mean(axis=0)*100
     discrimination_index = (grading.loc[upper_quartile_idx].sum() - grading.loc[lower_quartile_idx].sum()) / (len(upper_quartile_idx))
-
-    # difficulty_hard = st.session_state["difflevels"][0]     # boundary between hard and medium difficulty
-    # difficulty_medium = st.session_state["difflevels"][1]   # boundary between medium and easy difficulty
-    # disc_fair = st.session_state["discrlevels"][0]          # boundary between poor and fair discrimination
-    # disc_good = st.session_state["discrlevels"][1]          # boundary between fair and good discrimination
 
     difficulty_category = pd.cut(difficulty, bins=(0, difficulty_hard, difficulty_medium, 100), labels=("hard","medium","easy"))
     discrimination_category = pd.cut(discrimination_index, bins=(-1,disc_fair,disc_good,1), labels=("poor","fair","good"))
