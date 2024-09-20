@@ -162,14 +162,6 @@ with report:
     
     st.dataframe(df) # preview the data sheet
 
-    # try:
-    #     st.dataframe(df) # preview the data sheet
-    # except ValueError as e:
-    #     if "Duplicate column names found" in e.__str__():
-    #         st.error("Error reading column names. Try unchecking 'Use first row as column labels'")
-    #         st.stop()
-
-
     key = get_key(df)
     responses = get_responses(df)
     grading = (responses==key) # table of boolean values showing correctness. NaN are possible.
@@ -254,7 +246,7 @@ with report:
 
     ##### --------- DISTRACTOR ANALYSIS ----
     "## Distractor Analysis 📊"
-    """*Frequency of every choice for each item. Correct response shown in bold.*"""
+    """*Frequency of every response for each item. Correct response shown in bold.*"""
     # generate a table of frequency of choices in each item
     choice_freqs = (
         pd.DataFrame(
@@ -269,3 +261,22 @@ with report:
     for k, v in key.items():
         styler.set_properties(**{"font-weight":"bold"}, subset=(k, v))
     st.table(styler)
+
+
+    """
+    *Response frequencies broken by upper and lower quartile groups*
+    """
+    responses_upq = responses.loc[upper_quartile_idx]
+    responses_loq = responses.loc[lower_quartile_idx]
+    plotcols = st.columns(3)
+
+    for i,q in enumerate(responses.columns):
+        resp = responses[q].value_counts().sort_index()
+        ru = responses_upq[q].value_counts().sort_index()
+        rl = responses_loq[q].value_counts().sort_index()
+        cts = (pd.merge(rl, ru, how="outer", left_index=True, right_index=True)
+        .set_axis(["lower 25%", "upper 25%"], axis=1))
+        fig = cts.plot(kind="bar", rot=0, figsize=(4,2), grid=True, xlabel="", title=f"Item {q}, key={key[q]}").figure
+        plotcols[i%3].write(fig)
+
+    
