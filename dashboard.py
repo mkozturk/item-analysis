@@ -3,6 +3,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 samplefile = "data/sample1.xlsx"
 
+default_difficulty_levels = (20,70)
+default_discr_levels = (0.2, 0.4)
+
 def get_key(df):
     return df.iloc[0, :]
 
@@ -50,7 +53,7 @@ with st.sidebar:
     difficulty_hard, difficulty_medium = st.select_slider(
         "Set difficulty levels",
         options=range(0,105,5), 
-        value=(20,70))
+        value=default_difficulty_levels)
     st.dataframe(
         pd.DataFrame(
             [f"0 to {difficulty_hard}", f"{difficulty_hard} to {difficulty_medium}", f"{difficulty_medium} to 100"],
@@ -61,7 +64,7 @@ with st.sidebar:
     disc_fair,disc_good = st.select_slider(
         "Set discrimination levels",
         options=[round(i/10,1) for i in range(11)],
-        value=(0.2,0.4))
+        value=default_discr_levels)
     st.dataframe(
         pd.DataFrame(
             [f"(-1.0) to {disc_fair}", f"{disc_fair} to {disc_good}", f"{disc_good} to 1.0"],
@@ -77,6 +80,10 @@ with st.sidebar:
 report, help = st.tabs(["Report","Help"])
 
 with help:
+    with st.expander(label="Can I see a demonstration?"):
+        """
+        Click the "Load Sample" button in the sidebar to see the item analyzer in action, applied to a sample exam.
+        """
     with st.expander(label="How should the data be formatted?"):
         """
         The input file should have the responses arranged in rows. Eevery column corresponds to one response item (exam question).
@@ -86,6 +93,8 @@ with help:
         The input table cannot have more than one row or column as labels. In other words, responses must begin either in the first or the second row, or in the first or second column.
 
         The solution key **must** be on the first row of responses (after column headings, if any).
+
+
         """
     with st.expander("What kind of responses are accepted? A-D, T/F,...?"):
         """
@@ -110,17 +119,32 @@ with help:
         you can encode the responses as T/F (or 1/0, or any other binary code as you please), and run the analysis on that."""
 
     with st.expander(label="How can I analyze different booklets of the same exam?"):
-        """The analysis of several booklets of the same exam where responses are shuffled randomly, is not implemented in this app. 
-        In order to analyze such an exam, you would need to un-shuffle the responses and collect them in a single table.
+        """Some exams are given as different booklets where responses and/or items are randomly shuffled. 
+        This app cannot analyze such exams directly.
+        For such cases, we suggest you un-shuffle the responses and items, and combine them in a single table before uploading.
         """
     
-    with st.expander(label="How is item difficulty calculated?"):
+    with st.expander(label="How is an item's difficulty calculated?"):
         """The difficulty of an item is defined as the fraction of correct answers, multiplied by 100."""
     
     with st.expander(label="How is an item's discrimination index calculated?"):
         """The discrimination index (DI) of an item can be defined in several different ways. Here we use a simple but useful form: 
         Count the correct answers to that item in the top 25% group and in the bottom 25% group, evaluated on the overall exam score.
         The DI is the difference between them, divided by the number of students in one of these groups."""
+    
+    with st.expander(label="How do you define easy, medium, and hard difficulty levels?"):
+        f"""
+        By default, "hard" is difficulty below {default_difficulty_levels[0]},"easy" is difficulty above {default_difficulty_levels[1]},
+          and "medium" is between these values. These thresholds can be changed by adjusting the slider "Set difficulty levels" on the sidebar.
+        """
+    
+    with st.expander(label="How do you define poor, fair, and good discrimination levels?"):
+        f"""
+        By default, if the discrimination index is below {default_discr_levels[0]} the item is said to have a poor discrimination,
+        if it is above {default_discr_levels[1]} it has good discrimination, and values between these are fair (intermediate) discrimination.
+        These thresholds can be changed by adjusting the slider "Set discrimination levels" on the sidebar.
+        """
+
 
 with report:
     #### Wait until the data is loaded
@@ -228,8 +252,8 @@ with report:
         .reset_index()
         [["index","difficulty level","discrimination level"]]
         .rename(columns={"index":"item"})
-        .pivot_table(index="discrimination level", columns="difficulty level", aggfunc=lambda x:", ".join(x))
-        .stack()
+        .pivot_table(index="discrimination level", columns="difficulty level", aggfunc=lambda x:", ".join(x), observed=False)
+        .stack(future_stack=True)
         .reindex(
             (
             ("poor","easy"),("poor","medium"),("poor","hard"),
@@ -274,9 +298,14 @@ with report:
         resp = responses[q].value_counts().sort_index()
         ru = responses_upq[q].value_counts().sort_index()
         rl = responses_loq[q].value_counts().sort_index()
-        cts = (pd.merge(rl, ru, how="outer", left_index=True, right_index=True)
-        .set_axis(["lower 25%", "upper 25%"], axis=1))
+        cts = (
+            pd.merge(rl, ru, how="outer", left_index=True, right_index=True)
+            .set_axis(["lower 25%", "upper 25%"], axis=1)
+            )
         fig = cts.plot(kind="bar", rot=0, figsize=(4,2), grid=True, xlabel="", title=f"Item {q}, key={key[q]}").figure
-        plotcols[i%3].write(fig)
+        fig.savefig("plotimg.png")
+        plt.close(fig)
+        #plotcols[i%3].write(fig)
+        plotcols[i%3].image("plotimg.png")
 
     
