@@ -168,7 +168,9 @@ with report:
     labels_in_first_row = st.checkbox("Use first row as column labels", value=True)
     idx_first_col = st.checkbox("Use first column as index", value=True)
     if labels_in_first_row:
-        df = df.rename(columns=df.iloc[0]).drop(df.index[0])
+        cols = dict(zip(df.iloc[0], [str(_) for _ in df.iloc[0]])) # convert col labels to string
+        df = df.rename(columns=cols).drop(df.index[0])
+
     else:
         df = df.set_axis([f"Q{i+1:d}" for i in df.columns],axis=1)
     
