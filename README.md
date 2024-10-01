@@ -4,6 +4,21 @@ This project builds a Streamlit dashboard which generates an item analysis repor
 
 Test items (questions) can be multiple choice, true/false, or any combination of those.
 
+## Screenshots
+
+
+<table>
+  <tr>
+    <td> <img src="img/screenshot1.png"  alt="1" width = 100% border=1></td>
+    <td><img src="img/screenshot2.png" alt="2" width = 100% border=1></td>
+   </tr> 
+   <tr>
+    <td> <img src="img/screenshot3.png"  alt="1" width = 100% border=1></td>
+    <td><img src="img/screenshot4.png" alt="2" width = 100% border=1></td>
+  </td>
+  </tr>
+</table>
+
 ## Development setup
 
 This project requires Python>=3.12 and streamlit>=1.38.
