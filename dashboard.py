@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-samplefile = "data/sample1.xlsx"
+samplefile1 = "data/sample1.xlsx"
+samplefile2 = "data/Placement.xlsx"
 
 default_difficulty_levels = (20,70)
 default_discr_levels = (0.2, 0.4)
@@ -11,6 +12,33 @@ def get_key(df):
 
 def get_responses(df):
     return df.iloc[1:,:]
+
+def load_data():
+    if st.session_state.datasource=="sample":
+        st.session_state.labels_in_first_row = True
+        st.session_state.idx_first_col = True
+        st.session_state.df = pd.read_excel(
+            st.session_state.samplefile, 
+            header=(0 if st.session_state.labels_in_first_row else None),
+            index_col=(0 if st.session_state.idx_first_col else None)
+            )
+    elif st.session_state.datasource=="upload":
+        if uploaded_file is None: # occurs when the uploaded file is removed
+            st.stop() # wait until a file is chosen
+        if uploaded_file.name.endswith("xlsx"):
+            st.session_state.df = pd.read_excel(
+                uploaded_file,
+                header=(0 if st.session_state.labels_in_first_row else None),
+                index_col=(0 if st.session_state.idx_first_col else None))
+        if uploaded_file.name.endswith("csv"):
+            uploaded_file.seek(0,0)
+            st.session_state.df = pd.read_csv(
+                uploaded_file, 
+                header=(0 if st.session_state.labels_in_first_row else None),
+                index_col=(0 if st.session_state.idx_first_col else False)
+                )
+    else:
+        st.stop()
 
 st.set_page_config(
     page_title="Item Analysis App",
@@ -24,6 +52,16 @@ def initial_state():
         st.session_state['df'] = None
     if 'datasource' not in st.session_state:
         st.session_state['datasource'] = None # None, "sample", or "upload"
+    if 'labels_in_first_row' not in st.session_state:
+        st.session_state["labels_in_first_row"] = False
+    if "idx_first_col" not in st.session_state:
+        st.session_state["idx_first_col"] = False
+
+def reset_state():
+    st.session_state['df'] = None
+    st.session_state['datasource'] = None # None, "sample", or "upload"
+    st.session_state["labels_in_first_row"] = False
+    st.session_state["idx_first_col"] = False
 
 initial_state()
 
@@ -37,16 +75,19 @@ with st.sidebar:
 
     "## Demo 🕹️"
     "Click the button to load the sample response set and see its analysis results."
-    def sample_click():
+    def sample_click(samplefile):
+        reset_state()
         st.session_state.datasource = "sample"
-        st.session_state.df = None
-    load_sample = st.button("Load Sample", on_click=sample_click)
+        st.session_state.samplefile = samplefile
+    col1, col2 = st.columns(2)
+    col1.button("Load Sample 1", on_click=sample_click, args=(samplefile1,))
+    col2.button("Load Sample 2", on_click=sample_click, args=(samplefile2,))
 
     "## Upload your data 📂"
     "Single-sheet Excel or CSV file. Students in rows, items in columns. Solution key in the first row."
     def upload_change():
+        reset_state()
         st.session_state.datasource = "upload"
-        st.session_state.df = None
     uploaded_file = st.file_uploader("Upload your data file", type=["xlsx","csv"], label_visibility="hidden", on_change=upload_change)
     
     "## Settings 🛠️"
@@ -149,47 +190,33 @@ with help:
 with report:
     #### Wait until the data is loaded
     if st.session_state.df is None:
-        if st.session_state.datasource=="sample":
-            df = pd.read_excel(samplefile, header=None)
-        elif st.session_state.datasource=="upload":
-            if uploaded_file is None: # occurs when the uploaded file is removed
-                st.stop()
-            if uploaded_file.name.endswith("xlsx"):
-                df = pd.read_excel(uploaded_file, header=None)
-            if uploaded_file.name.endswith("csv"):
-                df = pd.read_csv(uploaded_file, header=None)
-        else:
-            st.stop()
+        load_data()
             
     ##### ------  PREVIEW THE DATA SHEET -----
     st.write("## Data Preview 📄")
     st.write("*Check the correctness of your data. Edit and reupload if necessary.*")
 
-    labels_in_first_row = st.checkbox("Use first row as column labels", value=True)
-    idx_first_col = st.checkbox("Use first column as index", value=True)
-    if labels_in_first_row:
-        cols = dict(zip(df.iloc[0], [str(_) for _ in df.iloc[0]])) # convert col labels to string
-        df = df.rename(columns=cols).drop(df.index[0])
+    st.checkbox("Use first row as column labels", value=False, key="labels_in_first_row", on_change=load_data)
+    st.checkbox("Use first column as index", value=False, key="idx_first_col", on_change=load_data)
 
-    else:
-        df = df.set_axis([f"Q{i+1:d}" for i in df.columns],axis=1)
+    df = st.session_state.df.copy()
     
-    if idx_first_col:
-        df = df.set_index(df.columns[0])
-    else:
-        df = df.set_axis([f"S{i+1:d}" for i in df.index])
+    if not st.session_state.labels_in_first_row:
+        df.index.name = "ID"
+        df.columns = [str(_) for _ in df.columns]
 
-    if not df.index.is_unique:
-        st.error("Duplicate index values found. Try unchecking 'Use first column as index' or review your input.")
-        st.stop()
-    if not df.columns.is_unique:
-        st.error("Duplicate column names found. Try unchecking 'Use first row as column labels'")
-        st.stop()
+    if len(df.iloc[:,0].unique())==len(df.iloc[:,0]):
+        st.error("First column appears to be an index. Try checking 'Use first column as index'",
+                 icon="🚨")
     
-    st.dataframe(df) # preview the data sheet
+    if len(df.iloc[0,:].unique())==len(df.iloc[0,:]):
+        st.error("First row appears to contain column labels. Try checking 'Use first row as column labels'",
+                 icon="🚨")
+    
+    st.dataframe(df)
 
     key = get_key(df)
-    responses = get_responses(df)
+    responses = get_responses(df).replace([" ",pd.NA],"blank")
     grading = (responses==key) # table of boolean values showing correctness. NaN are possible.
 
     ##### -------- STUDENT SCORES -------
@@ -199,6 +226,11 @@ with report:
     scores = grading.sum(axis=1)
     empty = responses.isna().sum(axis=1)
     incorrect = len(responses.columns) - scores - empty
+
+    if all(scores==0):
+        st.error("Possibly malformed data table. Try checking 'Use first row as column labels'",
+                 icon="🚨")
+
 
     col1, col2 = st.columns([0.4,0.6])
     col1.dataframe(pd.DataFrame({"correct":scores,"incorrect":incorrect, "empty":empty}))
@@ -282,12 +314,19 @@ with report:
         .fillna(0)
         .astype(int)
     )
+    # put blank count to the end of the table
+    if "blank" in choice_freqs.columns:
+        tmp = choice_freqs.columns.drop("blank")
+        choice_freqs.columns = list(tmp)+["blank"]
 
     styler = choice_freqs.style
-    for k, v in key.items():
-        styler.set_properties(**{"font-weight":"bold"}, subset=(k, v))
-    st.table(styler)
-
+    try:
+        for k, v in key.items():
+            styler.set_properties(**{"font-weight":"bold"}, subset=(k, v))
+        st.table(styler)
+    except KeyError:
+        st.error("Possibly malformed data table. Try checking 'Use first row as column labels'",
+                 icon="🚨")
 
     """
     *Response frequencies broken by upper and lower quartile groups*
@@ -305,9 +344,8 @@ with report:
             .set_axis(["lower 25%", "upper 25%"], axis=1)
             )
         fig = cts.plot(kind="bar", rot=0, figsize=(4,2), grid=True, xlabel="", title=f"Item {q}, key={key[q]}").figure
-        fig.savefig("plotimg.png")
-        plt.close(fig)
-        #plotcols[i%3].write(fig)
+        fig.savefig("plotimg.png") # save as png for display
+        plt.close(fig) # close figure to save memory
         plotcols[i%3].image("plotimg.png")
 
     
