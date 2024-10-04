@@ -40,4 +40,4 @@ $ streamlit run dashboard.py
 
 This will automatically open a browser window and display the app. If it does not, direct your browser to `http://localhost:8501`
 
-To load the sample dataset, click on the "Load Sample" button on the sidebar.
+To load a sample dataset, click on one of the "Load Sample" buttons on the sidebar.
