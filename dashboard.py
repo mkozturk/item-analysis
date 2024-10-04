@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 samplefile1 = "data/sample1.xlsx"
-samplefile2 = "data/Placement.xlsx"
+samplefile2 = "data/sample2.xlsx"
 
 default_difficulty_levels = (20,70)
 default_discr_levels = (0.2, 0.4)
