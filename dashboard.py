@@ -217,6 +217,7 @@ with report:
 
     key = get_key(df)
     responses = get_responses(df).replace([" ",pd.NA],"blank")
+    st.dataframe(responses)
     grading = (responses==key) # table of boolean values showing correctness. NaN are possible.
 
     ##### -------- STUDENT SCORES -------
@@ -317,7 +318,7 @@ with report:
     # put blank count to the end of the table
     if "blank" in choice_freqs.columns:
         tmp = choice_freqs.columns.drop("blank")
-        choice_freqs.columns = list(tmp)+["blank"]
+        choice_freqs = choice_freqs[list(tmp)+["blank"]]
 
     styler = choice_freqs.style
     try:
