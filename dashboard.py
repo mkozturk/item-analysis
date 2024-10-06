@@ -123,11 +123,11 @@ report, help = st.tabs(["Report","Help"])
 with help:
     with st.expander(label="Can I see a demonstration?"):
         """
-        Click the "Load Sample" button in the sidebar to see the item analyzer in action, applied to a sample exam.
+        Click one of the "Load Sample" buttons in the sidebar to see the item analyzer in action, applied to a sample exam.
         """
-    with st.expander(label="How should the data be formatted?"):
+    with st.expander(label="How should the input file be formatted?"):
         """
-        The input file should have the responses arranged in rows. Eevery column corresponds to one response item (exam question).
+        The input file should have the responses arranged in rows. Every column corresponds to one response item (exam question).
 
         The first row can be used as column headings, and the first column can be used for labeling (e.g., student name, ID, etc.). If labels are omitted in data, the report will use automatically generated labels.
 

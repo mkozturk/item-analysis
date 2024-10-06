@@ -9,12 +9,12 @@ Test items (questions) can be multiple choice, true/false, or any combination of
 
 <table>
   <tr>
-    <td> <img src="img/screenshot1.png"  alt="1" width = 100% border=1></td>
-    <td><img src="img/screenshot2.png" alt="2" width = 100% border=1></td>
+    <td> <img src="img/screenshot1.png"  width = 100% border=1></td>
+    <td><img src="img/screenshot2.png" width = 100% border=1></td>
    </tr> 
    <tr>
-    <td> <img src="img/screenshot3.png"  alt="1" width = 100% border=1></td>
-    <td><img src="img/screenshot4.png" alt="2" width = 100% border=1></td>
+    <td> <img src="img/screenshot3.png" width = 100% border=1></td>
+    <td><img src="img/screenshot4.png" width = 100% border=1></td>
   </td>
   </tr>
 </table>
