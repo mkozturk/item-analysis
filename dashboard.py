@@ -93,7 +93,7 @@ with st.sidebar:
     "## Settings 🛠️"
     difficulty_hard, difficulty_medium = st.select_slider(
         "Set difficulty levels",
-        options=range(0,105,5), 
+        options=range(5,95,5), # range limited to avoid error in pd.cut() below
         value=default_difficulty_levels)
     st.dataframe(
         pd.DataFrame(
@@ -104,7 +104,7 @@ with st.sidebar:
     )
     disc_fair,disc_good = st.select_slider(
         "Set discrimination levels",
-        options=[round(i/10,1) for i in range(11)],
+        options=[round(i/10,1) for i in range(1,10)], # range limited to avoid error in pd.cut() below
         value=default_discr_levels)
     st.dataframe(
         pd.DataFrame(
