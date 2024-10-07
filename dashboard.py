@@ -213,8 +213,6 @@ with report:
         st.error("First row appears to contain column labels. Try checking 'Use first row as column labels'",
                  icon="🚨")
     
-    st.dataframe(df)
-
     key = get_key(df)
     responses = get_responses(df).replace([" ",pd.NA],"blank")
     st.dataframe(responses)
