@@ -93,7 +93,7 @@ with st.sidebar:
     "## Settings 🛠️"
     difficulty_hard, difficulty_medium = st.select_slider(
         "Set difficulty levels",
-        options=range(5,95,5), # range limited to avoid error in pd.cut() below
+        options=range(5,100,5), # range limited to avoid error in pd.cut() below
         value=default_difficulty_levels)
     st.dataframe(
         pd.DataFrame(
