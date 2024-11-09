@@ -65,7 +65,7 @@ def reset_state():
 
 initial_state()
 
-st.image("img/pencil_and_test.png", use_column_width=True)
+st.image("img/pencil_and_test.png", use_container_width=True)
 
 "# Test Item Analysis Reporting Tool"
 
